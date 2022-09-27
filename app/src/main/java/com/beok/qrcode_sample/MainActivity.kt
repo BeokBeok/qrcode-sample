@@ -1,10 +1,15 @@
 package com.beok.qrcode_sample
 
+import android.content.ComponentName
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,8 +32,15 @@ import androidx.compose.ui.unit.dp
 import com.beok.qrcode_sample.ui.theme.QrcodesampleTheme
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 
 class MainActivity : ComponentActivity() {
+
+    private val barcodeLauncher = registerForActivityResult(ScanContract()) { result ->
+        if (result.contents == null) return@registerForActivityResult
+        Toast.makeText(this, "Scanned: ${result.contents}", Toast.LENGTH_SHORT).show()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,10 +73,24 @@ class MainActivity : ComponentActivity() {
                             )
                         )
                     }
-                    Button(onClick = {
-                        qrcode = qrCode(text) ?: return@Button
-                    }) {
-                        Text(text = "QR생성")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        Button(onClick = {
+                            qrcode = qrCode(text) ?: return@Button
+                        }) {
+                            Text(text = "QR생성")
+                        }
+                        Button(onClick = {
+                            barcodeLauncher.launch(
+                                ScanOptions()
+                                    .setPrompt("QR코드 딱 대!")
+                                    .setBeepEnabled(true)
+                            )
+                        }) {
+                            Text(text = "QR스캔")
+                        }
                     }
                     Spacer(
                         modifier = Modifier
